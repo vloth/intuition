@@ -1,0 +1,18 @@
+{:paths
+ ["src" "resources"]
+
+ :deps
+ {aerial.hanami/aerial.hanami {:mvn/version "0.17.0"}
+  clj-jgit/clj-jgit {:mvn/version "1.0.2"}
+  com.cognitect/transit-clj {:mvn/version "1.0.329"}
+  datalevin/datalevin {:mvn/version "0.6.28"}
+  io.github.nextjournal/clerk {:git/sha "8f376762847bc1728b12679111b09c5943a70990"}
+  org.clojure/clojure {:mvn/version "1.11.1"}}
+
+ :aliases
+ {:nrepl {:extra-deps {cider/cider-nrepl {:mvn/version "0.28.6"}}
+          :jvm-opts  ["--add-opens=java.base/java.nio=ALL-UNNAMED"
+                      "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED"]
+          :main-opts ["-m" "nrepl.cmdline" "--middleware" "[cider.nrepl/cider-middleware]"]}}}
+
+
