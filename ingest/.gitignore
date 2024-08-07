@@ -1,0 +1,14 @@
+# nbb
+.nbb
+.clj-kondo/.cache
+.cpcache
+.lsp/.cache
+.nrepl-port
+/.nrepl-history
+/.nrepl-port
+
+# nodejs
+node_modules
+
+# env
+.env
