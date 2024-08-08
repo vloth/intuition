@@ -24,7 +24,6 @@
              (p/catch js/console.error))
          (reset! system-atom)))
 
-
 #_{:clj-kondo/ignore [:clojure-lsp/unused-public-var]}
 (defn main []
   (-> (clj->js {:options options :args (drop 2 js/process.argv)})
