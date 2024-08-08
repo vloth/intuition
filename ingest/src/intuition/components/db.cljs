@@ -1,13 +1,19 @@
 (ns intuition.components.db
   (:require ["duckdb$default" :as duckdb]
+            ["util" :refer [promisify]]
             [promesa.core :as p]))
 
 (defn new-db
   [{:keys [db-path]}]
-  (let [db (duckdb/Database. db-path)] 
-    {:db db :conn (.connect db)}))
+  (let [db   (duckdb/Database. db-path)
+        conn (.connect db)]
+    {:db   db
+     :conn conn
+     :exec (-> (.-all conn)
+               (promisify)
+               (.bind conn))}))
 
-(defn halt! 
+(defn halt-db
   [{:keys [db conn]}]
   (p/do
     (.close conn)

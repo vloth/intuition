@@ -2,7 +2,7 @@
   (:require ["node:util" :as node.util]
             [intuition.adapter :as adapter]
             [intuition.components.config :refer [new-config]]
-            [intuition.components.db :refer [new-db]]
+            [intuition.components.db :refer [halt-db new-db]]
             [promesa.core :as p]))
 
 (def ^:private options
@@ -24,12 +24,21 @@
              (p/catch js/console.error))
          (reset! system-atom)))
 
-#_{:clj-kondo/ignore [:clojure-lsp/unused-public-var]}
-(defn main []
+(defn stop-system! []
+  (some-> @system-atom
+          halt-db))
+
+(defn get-args-config []
   (-> (clj->js {:options options :args (drop 2 js/process.argv)})
       node.util/parseArgs
-      adapter/args->config
-      prn))
+      adapter/args->config))
+
+#_{:clj-kondo/ignore [:clojure-lsp/unused-public-var]}
+(defn main []
+  (p/let [args-config (get-args-config)
+          system      (start-system! args-config)]
+    (prn system)
+    (stop-system!)))
 
 (comment 
   (deref system-atom)

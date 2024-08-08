@@ -1,2 +1,2 @@
 {:clean  {:ns-inner-blocks-indentation :same-line}
- :cljfmt {:indents {async [[:block 1]]}}}
+ :cljfmt {:indents {deftest-async [[:block 1]]}}}
