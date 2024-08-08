@@ -1,3 +1,6 @@
+# db
+*.duckdb
+
 # nbb
 .nbb
 .clj-kondo/.cache

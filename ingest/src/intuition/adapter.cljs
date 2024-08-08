@@ -10,5 +10,5 @@
   See https://nodejs.org/api/util.html#utilparseargsconfig for more info."
   [js-args]
   (-> (.-values js-args)
-      (->plain-js)
+      ->plain-js
       (js->clj :keywordize-keys true)))
