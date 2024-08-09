@@ -1,11 +1,20 @@
 (ns unit.intuition.adapter-test
-  (:require [aux.cli :refer [make-cli-args]]
-            [cljs.test :refer [are deftest]]
+  (:require [cljs.test :refer [is deftest]]
             [intuition.adapter :as adapter]))
 
-(deftest transform-args->config
-  (are [x y]
-       (= x (adapter/args->config (make-cli-args {:foo :boolean :bar :string} y)))
-    {:foo true :bar "123"} "--foo --bar=123"
-    {:bar "123"} "--bar=123"
-    {} ""))
+(deftest transform->config
+  (is (= {:db/path          "db/path"
+          :task/type        "task/type"
+          :http/delay-420   999
+          :jenkins/url      "jenkins/url"
+          :jenkins/username "jenkins/username"
+          :jenkins/password "jenkins/password"
+          :jenkins/job-path "jenkins/job-path"}
+         (-> {:db-path          "db/path"
+              :task-type        "task/type"
+              :delay-429        "999"
+              :jenkins-url      "jenkins/url"
+              :jenkins-username "jenkins/username"
+              :jenkins-password "jenkins/password"
+              :job-path         "jenkins/job-path"}
+             adapter/->config))))

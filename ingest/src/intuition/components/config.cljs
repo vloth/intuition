@@ -1,22 +1,32 @@
 (ns intuition.components.config
-  (:require [clojure.string :as str]
-            [intuition.adapter :refer [->plain-js]]))
+  (:require ["node:util" :as node.util]
+            [clojure.string :as str]
+            [intuition.support :refer [->json]]))
 
-(defn- format-env-keys
+(defn- format-env-name
+  [env-name]
+  (-> (name env-name)
+      str/lower-case
+      (str/replace "_" "-")
+      keyword))
+
+(defn- ->env
   [env]
-  (into {}
-        (for [[k v] env]
-          [(-> k
-               name
-               str/lower-case
-               (str/replace "_" "-")
-               keyword) v])))
+  (->> (js->clj (->json env) :keywordize-keys true)
+       (#(for [[k v] %] [(format-env-name k) v]))
+       (into {})))
+
+(defn ->cli-args
+  [cli-options args]
+  (-> (clj->js {:options cli-options :args args})
+      node.util/parseArgs
+      .-values
+      ->json
+      (js->clj :keywordize-keys true)))
 
 (defn new-config
-  ([extra-inputs filter-keys]
-   (new-config (->plain-js (.-env js/process)) extra-inputs filter-keys))
-  ([env extra-inputs filter-keys]
-   (-> (js->clj env :keywordize-keys true)
-       (select-keys filter-keys)
-       format-env-keys
-       (merge extra-inputs))))
+  ([]
+   (new-config {:env/data {}}))
+  ([source]
+   (merge (->env (:env/data source))
+          (->cli-args (:cli/options source) (:cli/args source)))))

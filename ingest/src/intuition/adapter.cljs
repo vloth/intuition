@@ -1,14 +1,12 @@
-(ns intuition.adapter)
+(ns intuition.adapter 
+  (:require [intuition.support :refer [parse-int]]))
 
-(defn ->plain-js 
-  "Converts a Javascript class instace into a plain object."
-  [js-object]
-  (.assign js/Object #js {} js-object))
-
-(defn args->config
-  "Returns a clojure map from a javascript args object.
-  See https://nodejs.org/api/util.html#utilparseargsconfig for more info."
-  [js-args]
-  (-> (.-values js-args)
-      ->plain-js
-      (js->clj :keywordize-keys true)))
+(defn ->config
+  [c]
+  {:db/path          (:db-path c)
+   :task/type        (:task-type c)
+   :http/delay-420   (parse-int (:delay-429 c))
+   :jenkins/url      (:jenkins-url c)
+   :jenkins/username (:jenkins-username c)
+   :jenkins/password (:jenkins-password c)
+   :jenkins/job-path (:job-path c)})

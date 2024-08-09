@@ -4,8 +4,8 @@
             [promesa.core :as p]))
 
 (defn new-db
-  [{:keys [db-path]}]
-  (let [db   (duckdb/Database. db-path)
+  [{:db/keys [path]}]
+  (let [db   (duckdb/Database. path)
         conn (.connect db)]
     {:db   db
      :conn conn

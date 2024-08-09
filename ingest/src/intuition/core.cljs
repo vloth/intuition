@@ -1,45 +1,52 @@
 (ns intuition.core
-  (:require ["node:util" :as node.util]
-            [intuition.adapter :as adapter]
+  (:require [intuition.adapter :as adapter]
             [intuition.components.config :refer [new-config]]
             [intuition.components.db :refer [halt-db new-db]]
+            [intuition.components.http :refer [new-http]]
+            [intuition.controller :as controller]
             [promesa.core :as p]))
 
 (def ^:private options
-  {:db-path {:type "string"}
-   :task    {:type "string"}})
+  (->> [:db-path :task-type :job-path]
+       (map (fn [k] [k {:type "string"}]))
+       (into {})))
 
-(def system-atom (atom nil))
+(defonce system-atom (atom nil))
 
 (defn- build-system-map
-  [extra-config]
-  (p/let [env-vars [:JENKINS_URL :DB_PATH]
-          config   (new-config extra-config env-vars)
-          db       (new-db config)]
-    {:config config :db db}))
+  [source]
+  (p/let [config (adapter/->config (new-config source))
+          http   (new-http config)
+          db     (new-db config)]
+    {:config config :db db :http http}))
 
 (defn start-system!
-  [extra-config]
-  (p/->> (-> (build-system-map extra-config)
+  [config-source]
+  (p/->> (-> (build-system-map config-source)
              (p/catch js/console.error))
          (reset! system-atom)))
 
 (defn stop-system! []
-  (some-> @system-atom
-          halt-db))
+  (some-> @system-atom halt-db))
 
-(defn get-args-config []
-  (-> (clj->js {:options options :args (drop 2 js/process.argv)})
-      node.util/parseArgs
-      adapter/args->config))
+(defn run-task
+  [config]
+  (case (:task config)
+    "jenkins" (controller/upsert-jenkins-builds config)))
 
 #_{:clj-kondo/ignore [:clojure-lsp/unused-public-var]}
 (defn main []
-  (p/let [args-config (get-args-config)
-          system      (start-system! args-config)]
+  (p/let [config-source 
+          {:env/data    (.-env js/process)
+           :cli/args    (drop 2 js/process.argv)
+           :cli/options options}
+          system        (start-system! config-source)]
     (prn system)
     (stop-system!)))
 
-(comment 
+(comment
   (deref system-atom)
-  (start-system! {}))
+  (js/await 
+    (start-system! {:env/data    (.-env js/process)
+                    :cli/args    (drop 2 js/process.argv)
+                    :cli/options options})))
