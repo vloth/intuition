@@ -1,5 +1,6 @@
 # db
 *.duckdb
+*.duckdb.wal
 
 # nbb
 .nbb

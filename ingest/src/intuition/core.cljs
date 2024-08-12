@@ -1,13 +1,14 @@
 (ns intuition.core
   (:require [intuition.adapter :as adapter]
             [intuition.components.config :refer [new-config]]
-            [intuition.components.db :refer [halt-db new-db]]
+            [intuition.components.db :refer [exec halt-db new-db]]
             [intuition.components.http :refer [new-http]]
             [intuition.controller :as controller]
+            [intuition.db.schema :refer [schema-def]]
             [promesa.core :as p]))
 
 (def ^:private options
-  (->> [:db-path :task-type :job-path]
+  (->> [:db-path :task-type :task-source :jenkins-job-path]
        (map (fn [k] [k {:type "string"}]))
        (into {})))
 
@@ -22,21 +23,23 @@
 
 (defn start-system!
   [config-source]
-  (p/->> (-> (build-system-map config-source)
-             (p/catch js/console.error))
-         (reset! system-atom)))
+  (p/let [system (p/catch (build-system-map config-source) js/console.error)]
+    (exec (:db system) schema-def)
+    (reset! system-atom system)))
 
 (defn stop-system! []
-  (some-> @system-atom halt-db))
+  (when @system-atom
+    (halt-db (:db @system-atom))
+    (reset! system-atom nil)))
 
 (defn run-task
-  [config]
-  (case (:task config)
-    "jenkins" (controller/upsert-jenkins-builds config)))
+  [system]
+  (case (get-in system [:config :task/type])
+    "jenkins" (controller/upsert-jenkins-builds system)))
 
 #_{:clj-kondo/ignore [:clojure-lsp/unused-public-var]}
 (defn main []
-  (p/let [config-source 
+  (p/let [config-source
           {:env/data    (.-env js/process)
            :cli/args    (drop 2 js/process.argv)
            :cli/options options}
@@ -46,6 +49,8 @@
 
 (comment
   (deref system-atom)
+  (stop-system!)
+  ;; start system
   (js/await 
     (start-system! {:env/data    (.-env js/process)
                     :cli/args    (drop 2 js/process.argv)
