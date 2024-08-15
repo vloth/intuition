@@ -1,23 +1,31 @@
 (ns unit.intuition.adapter-test
-  (:require [cljs.test :refer [is deftest]]
+  (:require [cljs.test :refer [is deftest testing]]
             [intuition.adapter :as adapter]))
 
-(deftest transform->config
-  (is (= {:db/path          "db/path"
-          :task/type        "task/type"
-          :task/source      "task/source"
-          :http/delay-420   999
-          :jenkins/url      "jenkins/url"
-          :jenkins/username "jenkins/username"
-          :jenkins/password "jenkins/password"
-          :jenkins/job-path "jenkins/job-path"}
-         (adapter/->config
-           {:db-path          "db/path"
-            :task-type        "task/type"
-            :task-source      "task/source"
-            :delay-429        "999"
-            :jenkins-url      "jenkins/url"
-            :jenkins-username "jenkins/username"
-            :jenkins-password "jenkins/password"
-            :jenkins-job-path "jenkins/job-path"}))))
-
+(deftest test->config
+  (testing "->config function with all keywords"
+    (is
+      (= {:db/path          "path/to/db"
+          :task/type        "type"
+          :task/source      "source"
+          :http/delay-429   100
+          :jenkins/url      "http://jenkins.url"
+          :jenkins/username "user"
+          :jenkins/password "pass"
+          :jenkins/job-path "job/path"
+          :git/repository   "repo"
+          :git/branch       "branch"
+          :git/remote       "remote"
+          :git/pull?        true}
+         (adapter/->config {:db-path          "path/to/db"
+                            :task-type        "type"
+                            :task-source      "source"
+                            :delay-429        "100"
+                            :jenkins-url      "http://jenkins.url"
+                            :jenkins-username "user"
+                            :jenkins-password "pass"
+                            :jenkins-job-path "job/path"
+                            :git-repository   "repo"
+                            :git-branch       "branch"
+                            :git-remote       "remote"
+                            :git-pull         "true"})))))

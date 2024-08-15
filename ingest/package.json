@@ -12,8 +12,8 @@
   },
   "dependencies": {
     "cli-progress": "^3.12.0",
-    "simple-git": "^3.24.0",
     "duckdb": "^0.10.1",
-    "nbb": "^1.2.187"
+    "nbb": "^1.2.187",
+    "simple-git": "^3.25.0"
   }
 }

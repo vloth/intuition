@@ -8,7 +8,8 @@
             [promesa.core :as p]))
 
 (def ^:private options
-  (->> [:db-path :task-type :task-source :jenkins-job-path]
+  (->> [:db-path :task-type :task-source :jenkins-job-path :git-repository
+        :git-branch :git-remote :git-pull]
        (map (fn [k] [k {:type "string"}]))
        (into {})))
 
@@ -35,7 +36,9 @@
 (defn run-task
   [system]
   (case (get-in system [:config :task/type])
-    "jenkins" (controller/upsert-jenkins-builds system)))
+    "jenkins" (controller/upsert-jenkins-builds system)
+    "git"     (p/do (controller/upsert-git-commits system)
+                    (controller/upsert-git-tags system))))
 
 #_{:clj-kondo/ignore [:clojure-lsp/unused-public-var]}
 (defn main []
@@ -50,8 +53,14 @@
 (comment
   (deref system-atom)
   (stop-system!)
+
   ;; start system
-  (js/await 
-    (start-system! {:env/data    (.-env js/process)
-                    :cli/args    (drop 2 js/process.argv)
-                    :cli/options options})))
+  (js/await
+   (start-system! {:env/data    (.-env js/process)
+                   :cli/args    (drop 2 js/process.argv)
+                   :cli/options options}))
+
+  (js/await
+   (p/do (controller/upsert-git-commits @system-atom)
+         (controller/upsert-git-tags @system-atom))))
+
