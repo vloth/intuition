@@ -36,10 +36,11 @@
 (defn run-task
   [system]
   (case (get-in system [:config :task/type])
-    "jenkins" (controller/upsert-jenkins-builds system)
-    "jira"    (controller/upsert-jira-issues system)
-    "git"     (p/do (controller/upsert-git-commits system)
-                    (controller/upsert-git-tags system))))
+    "jenkins"   (controller/upsert-jenkins-builds system)
+    "bitbucket" (controller/upsert-bitbucket-pullrequests system)
+    "jira"      (controller/upsert-jira-issues system)
+    "git"       (p/do (controller/upsert-git-commits system)
+                      (controller/upsert-git-tags system))))
 
 #_{:clj-kondo/ignore [:clojure-lsp/unused-public-var]}
 (defn main []
@@ -56,14 +57,16 @@
   (stop-system!)
 
   ;; start system
-  (js/await
-   (start-system! {:env/data    (.-env js/process)
-                   :cli/args    (drop 2 js/process.argv)
-                   :cli/options options})
+  (js/await 
+    (-> {:env/data    (.-env js/process)
+         :cli/args    (drop 2 js/process.argv)
+         :cli/options options}
+        start-system!
+        (p/catch js/console.error)))
 
-   (js/await
-    (-> @system-atom
-        (assoc-in [:config :task/type]   "")
-        (assoc-in [:config :task/source] "")
-        run-task))))
+  (js/await
+   (-> @system-atom
+       (assoc-in [:config :task/type]   "")
+       (assoc-in [:config :task/source] "")
+       run-task)))
 

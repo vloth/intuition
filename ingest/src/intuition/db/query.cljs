@@ -53,3 +53,13 @@
                     :status_category_changed :history]
                    {:on-conflict :ignore}
                    builds)))
+
+(defn upsert-pullrequests
+  [db pullrequests]
+  (db/insert db
+             "bitbucket"
+             [:repo_slug :id :title :description :summary :state :author
+              :closed_by :commit :comment_count :created :updated :destination
+              :merged :opened]
+             {:on-conflict :replace}
+             pullrequests))

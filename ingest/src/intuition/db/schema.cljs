@@ -11,6 +11,26 @@
       PRIMARY KEY (source, id)
     );
 
+   CREATE TABLE IF NOT EXISTS 
+     bitbucket(
+       repo_slug VARCHAR(50),
+       id SMALLINT,
+       title VARCHAR(250),
+       description VARCHAR(1000),
+       summary VARCHAR(1000),
+       state VARCHAR(50),
+       author VARCHAR(50),
+       closed_by VARCHAR(50),
+       commit VARCHAR(50),
+       comment_count SMALLINT,
+       created TIMESTAMP,
+       updated TIMESTAMP,
+       destination VARCHAR(50),
+       merged TIMESTAMP,
+       opened TIMESTAMP,
+       PRIMARY KEY (repo_slug, id)
+    );
+
     CREATE TABLE IF NOT EXISTS
       jira(
         key VARCHAR(50) PRIMARY KEY,

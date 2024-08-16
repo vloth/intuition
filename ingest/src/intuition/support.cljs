@@ -43,3 +43,14 @@
   parent directories as well."
   [folder-path]
   (nfs/mkdir folder-path #js {:recursive true}))
+
+(defn add-time
+  "Adds a specified amount of time to a given date. The time unit is specified by a keyword (:date, :month, :year)."
+  [unit initial-date amount]
+  (let [date (js/Date. initial-date)]
+    (case unit
+      :date  (.setDate date (+ (.getDate date) amount))
+      :month (.setMonth date (+ (.getMonth date) amount))
+      :year  (.setFullYear date (+ (.getFullYear date) amount))
+      (throw (ex-info "Invalid time unit" {:unit unit})))
+    date))
