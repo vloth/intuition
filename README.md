@@ -1,16 +1,16 @@
-# Intuition/ingest
+# Intuition
 
 This is a CLI script to pull data from various sources and upsert them into a 
 local database. Built with Clojurescript, runs on Nodejs and saves data to a 
 Duckdb instance.  
 
 Supported sources:
-- [X] Jenkins builds
-- [X] Jira issues 
-- [X] Git commits
-- [X] Git tags
-- [] Bitbucket pull requests
-
+* [X] Jenkins builds
+* [X] Jira issues 
+* [X] Git commits
+* [X] Git tags
+* [x] Bitbucket pull requests
+* [ ] Github issues
 
 ## Getting started
 
