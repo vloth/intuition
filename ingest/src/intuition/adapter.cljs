@@ -16,7 +16,12 @@
    :git/branch       (:git-branch c)
    :git/remote       (:git-remote c)
    ;; fix pull can be a boolean
-   :git/pull?        (= "true" (:git-pull c))})
+   :git/pull?        (= "true" (:git-pull c))
+   :jira/url         (:jira-url c)
+   :jira/username    (:jira-username c)
+   :jira/password    (:jira-password c)
+   :jira/jql         (:jira-jql c)})
+   
 
 (defn ->build
   [{:task/keys [source]} jenkins-build]
@@ -50,3 +55,53 @@
          (mapv #(s/split % #"\trefs/tags/"))
          (mapv (fn [[hash tag]] {:hash hash :tag tag :source source})))
     []))
+
+
+(defn- status-change? [{:keys [field]}] (= "status" field))
+
+(defn- ->issue-history-transition
+  [{:keys [author created items]}]
+  (map (fn [item]
+         {:name        (:displayName author)
+          :email       (:emailAddress author)
+          :created     (js/Date. created)
+          :from_status (:fromString item)
+          :to_status   (:toString item)})
+       (filter status-change? items)))
+
+(defn- ->issue-history
+  [jticket]
+  (->> jticket
+       :changelog
+       :histories
+       (filter #(some status-change? (:items %)))
+       (mapcat ->issue-history-transition)
+       (sort-by :created)))
+
+(defn ->issue
+  [jira-issue]
+  {:key                 (:key jira-issue)
+   :summary             (get-in jira-issue [:fields :summary])
+   :created             (js/Date. (get-in jira-issue [:fields :created]))
+   :updated             (some-> (get-in jira-issue [:fields :updated])
+                                (js/Date.))
+   :duedate             (some-> (get-in jira-issue [:fields :duedate])
+                                (js/Date.))
+   :labels              (not-empty (get-in jira-issue [:fields :labels]))
+   :type                (get-in jira-issue [:fields :issuetype :name])
+   :priority            (get-in jira-issue [:fields :priority :name])
+   :project             (get-in jira-issue [:fields :project :name])
+   :assignee_name       (get-in jira-issue [:fields :assignee :displayName])
+   :assignee_email      (get-in jira-issue [:fields :assignee :emailAddress])
+   :reporter_name       (get-in jira-issue [:fields :reporter :displayName])
+   :reporter_email      (get-in jira-issue [:fields :reporter :emailAddress])
+   :resolution          (get-in jira-issue [:fields :resolution :name])
+   :resolution_datetime (some-> (get-in jira-issue [:fields :resolutiondate])
+                                (js/Date.))
+   :status              (get-in jira-issue [:fields :status :name])
+   :status_category     (get-in jira-issue
+                                [:fields :status :statusCategory :name])
+   :status_category_changed (some-> (get-in jira-issue
+                                            [:fields :statuscategorychangedate])
+                                    (js/Date.))
+   :history             (->issue-history jira-issue)})

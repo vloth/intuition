@@ -11,6 +11,35 @@
       PRIMARY KEY (source, id)
     );
 
+    CREATE TABLE IF NOT EXISTS
+      jira(
+        key VARCHAR(50) PRIMARY KEY,
+        project VARCHAR(50),
+        type VARCHAR(50),
+        summary VARCHAR(500),
+        assignee_name VARCHAR(250),
+        assignee_email VARCHAR(250),
+        reporter_name VARCHAR(250),
+        reporter_email VARCHAR(250),
+        priority VARCHAR(50),
+        status VARCHAR(50),
+        status_category VARCHAR(50),
+        status_category_changed DATETIME,
+        resolution VARCHAR(50),
+        resolution_datetime DATETIME,
+        created DATETIME,
+        updated DATETIME,
+        duedate DATETIME,
+        labels VARCHAR(50)[],
+        history STRUCT(
+          name VARCHAR(250), 
+          email VARCHAR(250), 
+          created DATETIME, 
+          from_status VARCHAR(50), 
+          to_status VARCHAR (50)
+        )[]
+    );
+
     CREATE SCHEMA IF NOT EXISTS git;
 
     CREATE TABLE IF NOT EXISTS

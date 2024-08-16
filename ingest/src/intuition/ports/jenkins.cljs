@@ -17,7 +17,7 @@
            (map #(->api (:url %)))
            (partition-all 10)
            (map (fn [chapter]
-                  (p/do (p/delay 200)
+                  (p/do (p/delay 500)
                         (p/all (map #(get-build http credentials %) chapter)))))
            (allseq)
            (flatten))))

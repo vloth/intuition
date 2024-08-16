@@ -37,6 +37,7 @@
   [system]
   (case (get-in system [:config :task/type])
     "jenkins" (controller/upsert-jenkins-builds system)
+    "jira"    (controller/upsert-jira-issues system)
     "git"     (p/do (controller/upsert-git-commits system)
                     (controller/upsert-git-tags system))))
 
@@ -58,9 +59,11 @@
   (js/await
    (start-system! {:env/data    (.-env js/process)
                    :cli/args    (drop 2 js/process.argv)
-                   :cli/options options}))
+                   :cli/options options})
 
-  (js/await
-   (p/do (controller/upsert-git-commits @system-atom)
-         (controller/upsert-git-tags @system-atom))))
+   (js/await
+    (-> @system-atom
+        (assoc-in [:config :task/type]   "")
+        (assoc-in [:config :task/source] "")
+        run-task))))
 

@@ -16,17 +16,17 @@
 (defn get-latest-commit
   [db source]
   (p/->
-    (db/exec
-      db
-      (format
-        "SELECT hash 
+   (db/exec
+    db
+    (format
+     "SELECT hash 
          FROM git.commit 
          WHERE source = '%s' 
          ORDER BY date DESC
          LIMIT 1"
-        source))
-    (first)
-    (some-> (.-hash))))
+     source))
+   (first)
+   (some-> (.-hash))))
 
 (defn upsert-commits
   [db commits]
@@ -40,3 +40,16 @@
 (defn upsert-tags
   [db tags]
   (db/insert db "git.tag" [:tag :hash :source] {:on-conflict :ignore} tags))
+
+(defn upsert-issues
+  [db builds]
+  (p/do (db/delete db "jira" [:key] builds)
+        (db/insert db
+                   "jira"
+                   [:key :summary :created :updated :duedate :labels :type
+                    :priority :project :assignee_name :assignee_email
+                    :reporter_name :reporter_email :resolution
+                    :resolution_datetime :status :status_category
+                    :status_category_changed :history]
+                   {:on-conflict :ignore}
+                   builds)))

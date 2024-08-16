@@ -3,6 +3,7 @@
             [intuition.db.query :as query]
             [intuition.ports.git :as git]
             [intuition.ports.jenkins :as jenkins]
+            [intuition.ports.jira :as jira]
             [intuition.support :refer [mkdir]]
             [promesa.core :as p]))
 
@@ -26,3 +27,9 @@
          (adapter/->tag (:task/source config))
          (#(query/upsert-tags db %))))
 
+
+(defn upsert-jira-issues
+  [{:keys [db http config]}]
+  (p/->> (jira/search http config)
+         (map adapter/->issue)
+         (#(query/upsert-issues db %))))
