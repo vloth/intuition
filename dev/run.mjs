@@ -1,6 +1,6 @@
 import { loadString } from 'nbb'
 
 await loadString(`
-  (require '[core :refer [main]])
+  (require '[intuition.core :refer [main]])
   (main)
 `)
