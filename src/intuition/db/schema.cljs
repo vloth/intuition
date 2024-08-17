@@ -1,6 +1,7 @@
-(ns intuition.db.schema)
+(ns intuition.db.schema 
+  (:require [intuition.components.db :refer [exec]]))
 
-(def schema-def
+(def ^:private schema-def
   "CREATE TABLE IF NOT EXISTS 
     jenkins(
       source VARCHAR(50),
@@ -82,3 +83,6 @@
         source VARCHAR(250),
         PRIMARY KEY (tag, hash, source)
       );")
+
+(defn sync-schema [db]
+  (exec db schema-def))

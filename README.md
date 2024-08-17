@@ -1,6 +1,6 @@
 # Intuition
 
-A CLI script to retrieve data from various sources and upsert themit into a local database.  
+A CLI script to retrieve data from various sources and upsert them into a local database.  
 Supported sources:  
 * [X] Jenkins builds
 * [X] Jira issues 

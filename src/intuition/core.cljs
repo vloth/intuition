@@ -1,10 +1,10 @@
 (ns intuition.core
   (:require [intuition.adapter :as adapter]
             [intuition.components.config :refer [new-config]]
-            [intuition.components.db :refer [exec halt-db new-db]]
+            [intuition.components.db :refer [halt-db new-db]]
             [intuition.components.http :refer [new-http]]
             [intuition.controller :as controller]
-            [intuition.db.schema :refer [schema-def]]
+            [intuition.db.schema :refer [sync-schema]]
             [promesa.core :as p]))
 
 (def ^:private options
@@ -30,7 +30,7 @@
      :cli/options options}))
   ([source]
    (p/let [system (build-system-map source)]
-     (exec (:db system) schema-def)
+     (sync-schema (:db system))
      (reset! system-atom system))))
 
 (defn stop-system! []
