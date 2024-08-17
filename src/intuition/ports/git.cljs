@@ -27,6 +27,14 @@
   (.then (.listRemote repo (clj->js opts)) identity))
 
 (defn get-commits
+  "Fetches commit logs from the specified Git repository.
+
+  Parameters:
+  - `config`: A map containing Git configuration settings, including branch, repository path, remote URL, and a flag indicating whether to pull the latest changes.
+  - `from-commit`: An optional string representing the commit hash to start the log from.
+
+  Returns:
+  A promise that resolves to a list of commit logs."
   [{:git/keys [branch repository remote pull?]} from-commit]
   (p/let [repo  (.simpleGit git repository)
           repo? (is-repo? repo)]
@@ -40,6 +48,13 @@
                     (into {}))))))
 
 (defn get-tags
+  "Fetches all tags from the specified Git repository.
+
+  Parameters:
+  - `repository`: A string representing the path to the Git repository.
+
+  Returns:
+  A promise that resolves to a list of tags from the remote repository."
   [repository]
   (list-remote (.simpleGit git repository)
                [:--tags :--refs]))

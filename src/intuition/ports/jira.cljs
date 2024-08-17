@@ -23,6 +23,14 @@
                            :startAt      start-at}})))
 
 (defn search
+  "Performs a paginated search for Jira issues based on the provided configuration.
+  
+  Parameters:
+  - `http`: An HTTP client instance used to make requests.
+  - `config`: A map containing Jira configuration settings, including URL, username, password, and JQL query.
+
+  Returns:
+  A promise that resolves to a concatenated list of all issues found across all pages."
   [http config]
   (p/let [{:keys [issues total maxResults]} (search-page http config)
           page-count (.floor js/Math (/ total maxResults))

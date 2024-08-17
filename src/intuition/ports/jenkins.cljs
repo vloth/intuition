@@ -10,6 +10,14 @@
   (request http {:method :GET :url job-path :credentials credentials}))
 
 (defn get-builds
+  "Fetches all builds for a given Jenkins job.
+
+  Parameters:
+  - `http`: An HTTP client instance used to make requests.
+  - `config`: A map containing Jenkins configuration settings, including URL, username, password, and job path.
+
+  Returns:
+  A promise that resolves to a concatenated list of all builds found."
   [http {:jenkins/keys [url username password job-path]}]
   (p/let [credentials [username password]
           build       (get-build http credentials (->api url job-path))]

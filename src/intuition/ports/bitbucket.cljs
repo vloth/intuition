@@ -55,6 +55,15 @@
     pull-requests))
 
 (defn get-pull-requests
+  "Fetches all pull requests from the specified Bitbucket repository and includes their activities.
+
+  Parameters:
+  - `http`: An HTTP client instance used to make requests.
+  - `config`: A map containing Bitbucket configuration settings, including URL, username, password, and repository slug.
+  - `filter-from`: An optional date to filter pull requests from.
+
+  Returns:
+  A promise that resolves to a list of pull requests with their associated activities."
   [http config filter-from]
   (p/let [pull-requests (get-bare-pullrequests http config)
           pr-in-scope   (scoped pull-requests filter-from)]
