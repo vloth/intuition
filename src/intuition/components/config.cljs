@@ -16,17 +16,20 @@
        (#(for [[k v] %] [(format-env-name k) v]))
        (into {})))
 
+(defn- parse-args
+  [{:cli/keys [options args]}]
+  (node.util/parseArgs (clj->js {:options options :args args})))
+
 (defn ->cli-args
-  [cli-options args]
-  (-> (clj->js {:options cli-options :args args})
-      node.util/parseArgs
+  [parsed-args]
+  (-> parsed-args
       .-values
       ->json
       (js->clj :keywordize-keys true)))
 
 (defn new-config
-  ([]
-   (new-config {:env/data {}}))
+  ([] (new-config {:env/data {}}))
   ([source]
-   (merge (->env (:env/data source))
-          (->cli-args (:cli/options source) (:cli/args source)))))
+   (let [env-data (->env (:env/data source))
+         cli-data (->cli-args (parse-args source))]
+     (merge env-data cli-data))))

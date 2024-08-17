@@ -26,7 +26,7 @@ cp .env.sample .env
 # Install Node.js dependencies:
 npm install
 
-# Start nrepl, run tests or cli:
+# Start nrepl, run tests or run cli command:
 npm run nrepl
 npm run test
 npm run cli -- [--args]

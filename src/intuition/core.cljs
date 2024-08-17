@@ -23,10 +23,15 @@
     {:config config :db db :http http}))
 
 (defn start-system!
-  [config-source]
-  (p/let [system (p/catch (build-system-map config-source) js/console.error)]
-    (exec (:db system) schema-def)
-    (reset! system-atom system)))
+  ([]
+   (start-system!
+    {:env/data    (.-env js/process)
+     :cli/args    (drop 2 js/process.argv)
+     :cli/options options}))
+  ([source]
+   (p/let [system (build-system-map source)]
+     (exec (:db system) schema-def)
+     (reset! system-atom system))))
 
 (defn stop-system! []
   (when @system-atom
@@ -40,17 +45,17 @@
     "bitbucket" (controller/upsert-bitbucket-pullrequests system)
     "jira"      (controller/upsert-jira-issues system)
     "git"       (p/do (controller/upsert-git-commits system)
-                      (controller/upsert-git-tags system))))
+                      (controller/upsert-git-tags system))
+    nil))
 
 #_{:clj-kondo/ignore [:clojure-lsp/unused-public-var]}
 (defn main []
-  (p/let [config-source
-          {:env/data    (.-env js/process)
-           :cli/args    (drop 2 js/process.argv)
-           :cli/options options}
-          system        (start-system! config-source)]
-    (prn system)
-    (stop-system!)))
+  (p/let [system (-> (start-system!)
+                     (p/catch (fn [e]
+                                (js/console.error (ex-message e))
+                                (js/process.exit 1))))]
+    (p/do (run-task system)
+          (stop-system!))))
 
 (comment
   ;; stop system
@@ -58,16 +63,13 @@
 
   ;; start system
   (js/await
-    (-> {:env/data    (.-env js/process)
-         :cli/args    (drop 2 js/process.argv)
-         :cli/options options}
-        start-system!
-        (p/catch js/console.error)))
+   (p/catch (start-system!)
+            js/console.error))
 
   ;; run task
-  (js/await 
-    (-> @system-atom
-      (assoc-in [:config :task/type]   "") 
-      (assoc-in [:config :task/source] "") 
-      run-task)))
+  (js/await
+   (-> @system-atom
+       (assoc-in [:config :task/type]   "")
+       (assoc-in [:config :task/source] "")
+       run-task)))
 
