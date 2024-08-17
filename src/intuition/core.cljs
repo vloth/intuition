@@ -53,20 +53,21 @@
     (stop-system!)))
 
 (comment
-  (deref system-atom)
-  (stop-system!)
+  ;; stop system
+  (js/await (stop-system!))
 
   ;; start system
-  (js/await 
+  (js/await
     (-> {:env/data    (.-env js/process)
          :cli/args    (drop 2 js/process.argv)
          :cli/options options}
         start-system!
         (p/catch js/console.error)))
 
-  (js/await
-   (-> @system-atom
-       (assoc-in [:config :task/type]   "")
-       (assoc-in [:config :task/source] "")
-       run-task)))
+  ;; run task
+  (js/await 
+    (-> @system-atom
+      (assoc-in [:config :task/type]   "") 
+      (assoc-in [:config :task/source] "") 
+      run-task)))
 

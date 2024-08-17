@@ -15,8 +15,7 @@
    :git/repository        (:git-repository c)
    :git/branch            (:git-branch c)
    :git/remote            (:git-remote c)
-   ;; fix pull can be a boolean
-   :git/pull?             (= "true" (:git-pull c))
+   :git/pull?             (or (true? (:git-pull c)) (= "true" (:git-pull c)))
    :jira/url              (:jira-url c)
    :jira/username         (:jira-username c)
    :jira/password         (:jira-password c)
@@ -27,7 +26,6 @@
    :bitbucket/repo-slug   (:bitbucket-repo-slug c)
    :bitbucket/filter-from (some-> c :bitbucket-filter-from (js/Date.))
    :bitbucket/past-months (some-> c :bitbucket-past-months parse-int)})
-
 
 (defn ->build
   [{:task/keys [source]} jenkins-build]

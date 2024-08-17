@@ -1,4 +1,4 @@
-(ns intuition.controller 
+(ns intuition.controller
   (:require [intuition.adapter :as adapter]
             [intuition.db.query :as query]
             [intuition.ports.bitbucket :as bitbucket]
