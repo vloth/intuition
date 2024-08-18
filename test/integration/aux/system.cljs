@@ -31,12 +31,7 @@
     (js->clj result :keywordize-keys true)))
 
 (defn call [f & args]
-   (apply f (conj args @system-atom)))
-
-(defn reset-system []
-  (async done
-         (p/do (mock-http {})
-               (done))))
+  (apply f (conj args @system-atom)))
 
 (defn halt-system []
   (async done

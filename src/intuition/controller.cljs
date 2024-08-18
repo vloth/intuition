@@ -14,6 +14,12 @@
          (map #(adapter/->build config %))
          (#(query/upsert-jenkins db %))))
 
+(defn upsert-git-tags
+  [{:keys [db config]}]
+  (p/->> (git/get-tags (:git/repository config))
+         (adapter/->tag (:task/source config))
+         (#(query/upsert-tags db %))))
+
 (defn upsert-git-commits
   [{:keys [db config]}]
   (p/do (mkdir (:git/repository config))
@@ -21,12 +27,6 @@
                (git/get-commits config)
                (adapter/->commit (:task/source config))
                (#(query/upsert-commits db %)))))
-
-(defn upsert-git-tags
-  [{:keys [db config]}]
-  (p/->> (git/get-tags (:git/repository config))
-         (adapter/->tag (:task/source config))
-         (#(query/upsert-tags db %))))
 
 (defn upsert-jira-issues
   [{:keys [db http config]}]
