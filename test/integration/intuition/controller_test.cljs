@@ -3,6 +3,7 @@
             [integration.aux.system :as s]
             [intuition.controller :as controller]
             [intuition.ports.git :as git]
+            [intuition.support :refer [mkdir]]
             [promesa.core :as p]
             [test-support :refer [deftest-async with-redef-async]]))
 
@@ -14,6 +15,21 @@
    :jenkins/job-path "job/example"})
 
 (use-fixtures :each {:before (s/start-system config) :after s/halt-system})
+
+(deftest-async test-upsert-empty-list
+  (s/mock-http {"http://jenkins.com/job/example/api/json" {:builds []}})
+  (with-redef-async [git/get-tags    (constantly "") 
+                     mkdir           (constantly nil)
+                     git/get-commits (constantly  (constantly [{:all []}]))]
+    (p/let [_ (s/call controller/upsert-jenkins-builds)
+            _ (s/call controller/upsert-git-tags)
+            _ (s/call controller/upsert-git-commits)
+            jenkins-db-state     (s/query-db "select * from jenkins")
+            git-tags-db-state    (s/query-db "select * from git.tag")
+            git-commits-db-state (s/query-db "select * from git.commit")]
+      (is (and (= [] jenkins-db-state)
+               (= [] git-tags-db-state)
+               (= [] git-commits-db-state))))))
 
 (deftest-async test-upsert-jenkins-builds
   (s/mock-http
@@ -43,19 +59,6 @@
              :result "FAIL"
              :commits []}]
            db-state))))
-
-(deftest-async test-upsert-jenkins-builds-empty-list
-  (s/mock-http {"http://jenkins.com/job/example/api/json" {:builds []}})
-  (p/let [_ (s/call controller/upsert-jenkins-builds)
-          db-state (s/query-db "select * from jenkins")]
-    (is (= [] db-state))))
-
-
-(deftest-async test-upsert-git-tags-empty-list
-  (with-redef-async [git/get-tags (constantly "")]
-    (p/let [_ (s/call git/get-tags)
-            db-state (s/query-db "select * from git.tag")]
-      (is (= [] db-state)))))
 
 (deftest-async test-upsert-git-tags
   (with-redef-async [git/get-tags (constantly "hash1\trefs/tags/v1.0\nhash2\trefs/tags/v1.1\nhash3\trefs/tags/v2.0")]
