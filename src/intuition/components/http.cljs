@@ -61,6 +61,14 @@
 
 (defn new-http [config] #(fetch config (->fetch-args %)))
 
+(defn new-mock-http
+  [spec]
+  (fn [args]
+    (let [url (:url args)]
+      (if-let [response (get @spec url)]
+        response
+        (->error :response-not-found nil args)))))
+
 (defn request
   [http http-args]
   (p/let [result (http http-args)]

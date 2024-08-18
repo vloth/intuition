@@ -13,6 +13,7 @@
           :jenkins/username      "jenkins-user"
           :jenkins/password      "jenkins-pass"
           :jenkins/job-path      "job/path"
+          :jenkins/delay          500
           :git/repository        "repo"
           :git/branch            "branch"
           :git/remote            "remote"
@@ -33,6 +34,7 @@
             :task-source           "source"
             :delay-429             "429"
             :jenkins-url           "http://jenkins.url"
+            :jenkins-delay         "500"
             :jenkins-username      "jenkins-user"
             :jenkins-password      "jenkins-pass"
             :jenkins-job-path      "job/path"

@@ -6,8 +6,8 @@
 (defn- ->api [& parts] (apply join (concat parts ["api/json"])))
 
 (defn- get-build
-  [http credentials job-path]
-  (request http {:method :GET :url job-path :credentials credentials}))
+  [http credentials url]
+  (request http {:method :GET :url url :credentials credentials}))
 
 (defn get-builds
   "Fetches all builds for a given Jenkins job.
@@ -18,14 +18,14 @@
 
   Returns:
   A promise that resolves to a concatenated list of all builds found."
-  [http {:jenkins/keys [url username password job-path]}]
+  [http {:jenkins/keys [url username password job-path delay]}]
   (p/let [credentials [username password]
           build       (get-build http credentials (->api url job-path))]
     (p/->> (:builds build)
            (map #(->api (:url %)))
            (partition-all 10)
            (map (fn [chapter]
-                  (p/do (p/delay 500)
+                  (p/do (p/delay delay)
                         (p/all (map #(get-build http credentials %) chapter)))))
            (allseq)
            (flatten))))

@@ -12,6 +12,7 @@
    :jenkins/username      (:jenkins-username c)
    :jenkins/password      (:jenkins-password c)
    :jenkins/job-path      (:jenkins-job-path c)
+   :jenkins/delay         (parse-int (:jenkins-delay c))
    :git/repository        (:git-repository c)
    :git/branch            (:git-branch c)
    :git/remote            (:git-remote c)
