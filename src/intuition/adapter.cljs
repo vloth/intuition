@@ -1,32 +1,39 @@
-(ns intuition.adapter 
-  (:require [clojure.string :as s]
+(ns intuition.adapter
+  (:require [clojure.set :refer [rename-keys]]
+            [clojure.string :as str]
             [intuition.support :refer [parse-int]]))
 
+(def config-options
+  [:db-path :task-type :task-source :jenkins-job-path :git-repository
+   :git-branch :git-remote :git-pull :http-delay-429 :jenkins-url
+   :jenkins-username :jenkins-password :jenkins-delay :jira-url :jira-username
+   :jira-password :jira-jql :bitbucket-url :bitbucket-username
+   :bitbucket-password :bitbucket-repo-slug :bitbucket-filter-from
+   :bitbucket-past-months])
+
+(defn- convert-to-slash [key]
+  (let [key-name (name key)]
+    (keyword (str/replace-first key-name "-" "/"))))
+
+(defn- convert-keys
+  [config]
+  (reduce (fn [acc k]
+            (if-let [v (get config k)]
+              (assoc acc (convert-to-slash k) v)
+              acc))
+    {}
+    config-options))
+
 (defn ->config
-  [c]
-  {:db/path               (:db-path c)
-   :task/type             (:task-type c)
-   :task/source           (:task-source c)
-   :http/delay-429        (parse-int (:delay-429 c))
-   :jenkins/url           (:jenkins-url c)
-   :jenkins/username      (:jenkins-username c)
-   :jenkins/password      (:jenkins-password c)
-   :jenkins/job-path      (:jenkins-job-path c)
-   :jenkins/delay         (parse-int (:jenkins-delay c))
-   :git/repository        (:git-repository c)
-   :git/branch            (:git-branch c)
-   :git/remote            (:git-remote c)
-   :git/pull?             (or (true? (:git-pull c)) (= "true" (:git-pull c)))
-   :jira/url              (:jira-url c)
-   :jira/username         (:jira-username c)
-   :jira/password         (:jira-password c)
-   :jira/jql              (:jira-jql c)
-   :bitbucket/url         (:bitbucket-url c)
-   :bitbucket/username    (:bitbucket-username c)
-   :bitbucket/password    (:bitbucket-password c)
-   :bitbucket/repo-slug   (:bitbucket-repo-slug c)
-   :bitbucket/filter-from (some-> c :bitbucket-filter-from (js/Date.))
-   :bitbucket/past-months (some-> c :bitbucket-past-months parse-int)})
+  [config]
+  (-> config
+      convert-keys
+      (update :http/delay-429 parse-int)
+      (update :jenkins/delay parse-int)
+      (update :bitbucket/filter-from #(some-> % js/Date.)) 
+      (update :bitbucket/past-months #(some-> % parse-int))
+      (update :git/pull #(or (true? %) (= "true" %)))
+      (rename-keys {:git/pull :git/pull?})))
 
 (defn ->build
   [{:task/keys [source]} jenkins-build]
@@ -45,22 +52,21 @@
   (->> (js->clj simple-git-return :keywordize-keys true)
        :all
        (map #(assoc %
-               :source        source
-               :date          (js/Date. (:date %))
-               :changed_files (-> (js/Object.assign #js {} (:diff %))
-                                  (js->clj :keywordize-keys true)
-                                  (update :files (fn [f] (mapv :file f)))
-                                  :files)))))
+                    :source        source
+                    :date          (js/Date. (:date %))
+                    :changed_files (-> (js/Object.assign #js {} (:diff %))
+                                       (js->clj :keywordize-keys true)
+                                       (update :files (fn [f] (mapv :file f)))
+                                       :files)))))
 
 (defn ->tag
   [source simple-git-return]
-  (if-not (s/blank? simple-git-return)
+  (if-not (str/blank? simple-git-return)
     (->> simple-git-return
-         (s/split-lines)
-         (mapv #(s/split % #"\trefs/tags/"))
+         (str/split-lines)
+         (mapv #(str/split % #"\trefs/tags/"))
          (mapv (fn [[hash tag]] {:hash hash :tag tag :source source})))
     []))
-
 
 (defn- status-change? [{:keys [field]}] (= "status" field))
 
@@ -110,7 +116,6 @@
                                             [:fields :statuscategorychangedate])
                                     (js/Date.))
    :history             (->issue-history jira-issue)})
-
 
 (defn- pullrequest-state-date
   [state activity]

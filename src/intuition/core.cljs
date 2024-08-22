@@ -1,5 +1,5 @@
 (ns intuition.core
-  (:require [intuition.adapter :as adapter]
+  (:require [intuition.adapter :as adapter :refer [config-options]]
             [intuition.components.config :refer [new-config]]
             [intuition.components.db :refer [halt-db new-db]]
             [intuition.components.http :refer [new-http]]
@@ -8,10 +8,10 @@
             [promesa.core :as p]))
 
 (def ^:private options
-  (->> [:db-path :task-type :task-source :jenkins-job-path :git-repository
-        :git-branch :git-remote :git-pull]
-       (map (fn [k] [k {:type "string"}]))
-       (into {})))
+  (-> (->> config-options
+           (map (fn [k] [k {:type "string"}]))
+           (into {}))
+      (assoc :git-pull {:type "boolean"})))
 
 (defonce system-atom (atom nil))
 
