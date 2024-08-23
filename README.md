@@ -12,7 +12,6 @@ Supported sources:
 ### Prerequisites
 - [Duckdb v1.0.0 1f98600c2c](https://duckdb.org/)
 - [Nodejs v22.6.0](https://nodejs.org/en)
-- [babashka v1.3.191](https://babashka.org/)
 
 ### Installation
 ```bash
@@ -28,6 +27,6 @@ npm install
 
 # Start nrepl, run tests or run cli command:
 npm run nrepl
-npm run test
+npm test
 npm run cli -- [--args]
 ```

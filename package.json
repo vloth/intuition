@@ -8,7 +8,7 @@
   "scripts": {
     "nrepl": "node --env-file=.env dev/nrepl.mjs",
     "cli": "node --env-file=.env dev/run.mjs",
-    "test": "nbb -cp test -m nextjournal.test-runner"
+    "test": "node --no-deprecation dev/test.mjs"
   },
   "dependencies": {
     "cli-progress": "^3.12.0",
