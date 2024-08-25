@@ -14,10 +14,15 @@
   [type error response]
   {:error-type type :response response :error error})
 
-(defn- coerce-json
+(defn- coerce-clj
   [response]
   (-> (p/-> response .json (js->clj :keywordize-keys true))
       (p/catch #(->error :response-not-json % response))))
+
+(defn- coerce-text
+  [response]
+  (-> (p/-> response .text)
+      (p/catch #(->error :response-not-text % response))))
 
 (defn- error-message
   [{:keys [response error]} {:keys [method url]}]
@@ -42,14 +47,6 @@
   [fetch-fn config arguments]
   (p/do (p/delay (:http/delay-420 config) (fetch-fn config arguments))))
 
-(defn- fetch
-  [config arguments]
-  (p/let [response (safe-fetch arguments)]
-    (cond (fail? response)     response
-          (too-many? response) (retry fetch config arguments)
-          (not (ok? response)) (->error :response-not-ok nil response)
-          :else                (coerce-json response))))
-
 (defn- ->fetch-args
   [{:keys [url method body credentials]}]
   [url
@@ -59,7 +56,19 @@
                        :Accept        "application/json"
                        :Content-Type  "application/json"}})])
 
-(defn new-http [config] #(fetch config (->fetch-args %)))
+(defn- fetch
+  [config arguments]
+  (p/let [response (safe-fetch (->fetch-args arguments))]
+    (cond (fail? response)          response
+          (too-many? response)      (retry fetch config arguments)
+          (not (ok? response))      (->error :response-not-ok nil response)
+          (= :clj (:as arguments))  (coerce-clj response)
+          (= :text (:as arguments)) (coerce-text response)
+
+          :else
+          (->error :response-unknown-coercion nil response))))
+
+(defn new-http [config] #(fetch config %))
 
 (defn new-mock-http
   [spec]

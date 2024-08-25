@@ -9,7 +9,7 @@
     (p/do (db/delete db "jenkins" [:source :id] builds)
           (db/insert db
                      "jenkins"
-                     [:source :id :duration :result :commits]
+                     [:source :id :duration :result :startTime :endTime :cause :commit :steps]
                      {:on-conflict :ignore}
                      builds))))
 

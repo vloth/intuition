@@ -36,15 +36,25 @@
 
 (defn ->build
   [{:task/keys [source]} jenkins-build]
-  {:source   source
-   :id       (:number jenkins-build)
-   :duration (:duration jenkins-build)
-   :result   (:result jenkins-build)
-   :commits  (->> jenkins-build
-                  :changeSets
-                  (map :items)
-                  (flatten)
-                  (map :commitId))})
+  {:source    source
+   :id        (parse-int (:id jenkins-build))
+   :duration  (:durationInMillis jenkins-build)
+   :result    (:result jenkins-build)
+   :startTime (parse-date (:startTime jenkins-build))
+   :endTime   (parse-date (:endTime jenkins-build))
+   :cause     (str/join " - " (map :shortDescription (:causes jenkins-build)))
+   :commit    (:commitId jenkins-build)
+   :steps     (map (fn [step]
+                     {:id          (parse-int (:id step))
+                      :startTime   (parse-date (:startTime step))
+                      :name        (:displayName step)
+                      :description (:displayDescription step)
+                      :duration    (:durationInMillis step)
+                      :output      (:output step)
+                      :state       (:state step)
+                      :result      (:result step)
+                      :type        (:type step)})
+                (:steps jenkins-build))})
 
 (defn ->commit
   [source simple-git-return]

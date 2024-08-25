@@ -12,7 +12,7 @@
    {:db        [:path]
     :task      [:type :source]
     :http      [:delay-429]
-    :jenkins   [:job-path :url :username :password :delay]
+    :jenkins   [:job-path :url :username :password :delay :step-delay]
     :git       [:repository :branch :remote :pull]
     :jira      [:url :username :password :jql :delay]
     :bitbucket [:url :username :password :repo-slug
@@ -80,6 +80,6 @@
     (-> @system-atom
         (update :config assoc 
                 :task/type "jenkins" 
-                :task/source "my-jenkins")
+                :task/source "my-source")
        run-task)))
 

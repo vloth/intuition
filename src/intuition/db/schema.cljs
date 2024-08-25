@@ -8,7 +8,21 @@
       id INT,
       duration INT,
       result VARCHAR(50),
-      commits VARCHAR(40)[],
+      startTime TIMESTAMP,
+      endTime TIMESTAMP,
+      cause VARCHAR(250),
+      commit VARCHAR(40),
+      steps STRUCT(
+        id INT,
+        startTime TIMESTAMP,
+        name VARCHAR(250),
+        description VARCHAR(250),
+        duration INT,
+        output VARCHAR(1000),
+        state VARCHAR(50),
+        result VARCHAR(50),
+        type VARCHAR(50)
+      )[],
       PRIMARY KEY (source, id)
     );
 
