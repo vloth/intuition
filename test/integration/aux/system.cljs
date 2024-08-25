@@ -3,6 +3,7 @@
             [intuition.components.db :refer [exec halt-db new-db]]
             [intuition.components.http :refer [new-mock-http]]
             [intuition.db.schema :refer [sync-schema]]
+            [intuition.support :refer [allseq]]
             [promesa.core :as p]))
 
 (def system-atom (atom {}))
@@ -39,3 +40,10 @@
                (reset! system-atom {})
                (done))))
 
+(defn reset-system []
+  (async done
+         (p/do (p/->> ["bitbucket" "jenkins" "jira" "git.commit" "git.tag"]
+                      (map #(str "TRUNCATE " %))
+                      (map query-db)
+                      allseq)
+               (done))))

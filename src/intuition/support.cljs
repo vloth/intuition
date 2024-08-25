@@ -19,10 +19,16 @@
   [js-class-instance]
   (.assign js/Object #js {} js-class-instance))
 
+(defn parse-date
+  "Parses the given string into a date."
+  [date]
+  (when (not-empty date) (js/Date. date)))
+
 (defn parse-int
   "Parses the given string into an integer."
   [number]
-  (.parseInt js/Number number 10))
+  (when (not-empty number)
+    (.parseInt js/Number number 10)))
 
 (defn base-64
   "Encodes a buffer into the Base64 string representation."

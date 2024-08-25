@@ -38,7 +38,7 @@
     (p/->> pages
            (partition-all 10)
            (map (fn [chapter]
-                  (p/do (p/delay 2000)
+                  (p/do (p/delay (:jira/delay config))
                         (p/all (map #(search-page http config %) chapter)))))
            (allseq)
            (flatten)

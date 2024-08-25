@@ -14,7 +14,8 @@
    :jenkins/delay    0
    :jenkins/job-path "job/example"})
 
-(use-fixtures :each {:before (s/start-system config) :after s/halt-system})
+(use-fixtures :once {:before (s/start-system config) :after s/halt-system}
+              :each {:after s/reset-system})
 
 (deftest-async test-upsert-empty-list
   (s/mock-http {"http://jenkins.com/job/example/api/json" {:builds []}})

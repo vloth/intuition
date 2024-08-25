@@ -1,6 +1,7 @@
 (ns unit.intuition.support-test
-  (:require [cljs.test :refer [deftest is are]]
-            [intuition.support :refer [->json allseq base-64 join parse-int]]
+  (:require [cljs.test :refer [are deftest is]]
+            [intuition.support :refer [->json allseq base-64 join parse-date
+                                       parse-int]]
             [promesa.core :as p]
             [test-support :refer [deftest-async]]))
 
@@ -26,11 +27,18 @@
     (js-obj) {}
     (js-obj "a" 1 "b" (js-obj "c" 3)) {:a 1 :b {:c 3}}))
 
+(deftest test-parse-date
+  (are [input expected] (is (= (parse-date input) expected))
+    "0" #inst "1999-12-31T23:00:00.000-00:00"
+    ""  nil
+    "2028-01-20T23:00:00.000-00:00" #inst "2028-01-20T23:00:00.000-00:00"))
+
 (deftest test-parse-int
   (are [input expected]
        (is (= (parse-int input) expected))
     "42" 42
     "0" 0
+    "" nil
     "-42" -42))
 
 (deftest test-parse-int-nan

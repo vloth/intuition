@@ -26,7 +26,7 @@
     (p/loop [curr       curr
              activities activities]
       (if-let [next-page (:next curr)]
-        (p/do (p/delay 3000)
+        (p/do (p/delay (:bitbucket/activity-delay config))
               (p/let [next-activity (get-bb http config next-page)]
                 (p/recur next-activity
                          (concat activities (:values next-activity)))))
@@ -40,7 +40,7 @@
     (p/->> pages
            (partition-all 10)
            (map (fn [chapter]
-                  (p/do (p/delay 3000)
+                  (p/do (p/delay (:bitbucket/delay config))
                         (p/all (map #(get-bb http config (pullrequest-url config %))
                                  chapter)))))
            (allseq)

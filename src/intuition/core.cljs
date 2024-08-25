@@ -1,11 +1,22 @@
 (ns intuition.core
-  (:require [intuition.adapter :as adapter :refer [config-options]]
+  (:require [intuition.adapter :as adapter]
             [intuition.components.config :refer [new-config]]
             [intuition.components.db :refer [halt-db new-db]]
             [intuition.components.http :refer [new-http]]
             [intuition.controller :as controller]
             [intuition.db.schema :refer [sync-schema]]
             [promesa.core :as p]))
+
+(def config-options
+  (adapter/expand-config-keys
+   {:db        [:path]
+    :task      [:type :source]
+    :http      [:delay-429]
+    :jenkins   [:job-path :url :username :password :delay]
+    :git       [:repository :branch :remote :pull]
+    :jira      [:url :username :password :jql :delay]
+    :bitbucket [:url :username :password :repo-slug
+                :filter-from :past-months :delay :activity-delay]}))
 
 (def ^:private options
   (-> (->> config-options
@@ -17,7 +28,7 @@
 
 (defn- build-system-map
   [source]
-  (p/let [config (adapter/->config (new-config source))
+  (p/let [config (adapter/->config (new-config source) config-options)
           http   (new-http config)
           db     (new-db config)]
     {:config config :db db :http http}))
@@ -62,14 +73,13 @@
   (js/await (stop-system!))
 
   ;; start system
-  (js/await
-   (p/catch (start-system!)
-            js/console.error))
+  (js/await (p/catch (start-system!) js/console.error))
 
   ;; run task
   (js/await
-   (-> @system-atom
-       (assoc-in [:config :task/type]   "")
-       (assoc-in [:config :task/source] "")
+    (-> @system-atom
+        (update :config assoc 
+                :task/type "jenkins" 
+                :task/source "my-jenkins")
        run-task)))
 

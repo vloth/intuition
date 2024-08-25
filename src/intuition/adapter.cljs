@@ -1,37 +1,36 @@
 (ns intuition.adapter
   (:require [clojure.set :refer [rename-keys]]
             [clojure.string :as str]
-            [intuition.support :refer [parse-int]]))
+            [intuition.support :refer [parse-date parse-int]]))
 
-(def config-options
-  [:db-path :task-type :task-source :jenkins-job-path :git-repository
-   :git-branch :git-remote :git-pull :http-delay-429 :jenkins-url
-   :jenkins-username :jenkins-password :jenkins-delay :jira-url :jira-username
-   :jira-password :jira-jql :bitbucket-url :bitbucket-username
-   :bitbucket-password :bitbucket-repo-slug :bitbucket-filter-from
-   :bitbucket-past-months])
+(defn expand-config-keys
+  [config]
+  (mapcat (fn [[k v]] (map (fn [x] (keyword (str (name k) "-" (name x)))) v))
+    config))
 
 (defn- convert-to-slash [key]
   (let [key-name (name key)]
     (keyword (str/replace-first key-name "-" "/"))))
 
 (defn- convert-keys
-  [config]
+  [raw-config expanded-config-keys]
   (reduce (fn [acc k]
-            (if-let [v (get config k)]
+            (if-let [v (get raw-config k)]
               (assoc acc (convert-to-slash k) v)
               acc))
     {}
-    config-options))
+    expanded-config-keys))
 
 (defn ->config
-  [config]
-  (-> config
-      convert-keys
+  [raw-config expanded-config-keys]
+  (-> (convert-keys raw-config expanded-config-keys)
       (update :http/delay-429 parse-int)
       (update :jenkins/delay parse-int)
-      (update :bitbucket/filter-from #(some-> % js/Date.)) 
-      (update :bitbucket/past-months #(some-> % parse-int))
+      (update :jira/delay parse-int)
+      (update :bitbucket/filter-from parse-date) 
+      (update :bitbucket/past-months parse-int)
+      (update :bitbucket/delay parse-int)
+      (update :bitbucket/activity-delay parse-int)
       (update :git/pull #(or (true? %) (= "true" %)))
       (rename-keys {:git/pull :git/pull?})))
 
