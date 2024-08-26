@@ -13,6 +13,20 @@
                      {:on-conflict :ignore}
                      builds))))
 
+(defn get-latest-build
+  [db source]
+  (p/->
+    (db/exec
+      db
+      (format
+        "SELECT id 
+         FROM jenkins 
+         WHERE source = '%s' 
+         ORDER BY id DESC LIMIT 1"
+        source))
+    (first)
+    (some-> (.-id))))
+
 (defn get-latest-commit
   [db source]
   (p/->

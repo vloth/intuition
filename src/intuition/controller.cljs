@@ -10,7 +10,8 @@
 
 (defn upsert-jenkins-builds
   [{:keys [config db http]}]
-  (p/->> (jenkins/get-builds http config)
+  (p/->> (query/get-latest-build db (:task/source config))
+         (jenkins/get-builds http config)
          (map #(adapter/->build config %))
          (#(query/upsert-jenkins db %))))
 

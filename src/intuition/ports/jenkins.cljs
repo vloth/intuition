@@ -1,6 +1,6 @@
 (ns intuition.ports.jenkins
   (:require [intuition.components.http :refer [request]]
-            [intuition.support :refer [allseq join]]
+            [intuition.support :refer [allseq join parse-int]]
             [promesa.core :as p]))
 
 (def runs-suffix
@@ -51,9 +51,12 @@
     (assoc build :steps step-details)))
 
 (defn get-builds
-  [http {:jenkins/keys [url username password job-path delay] :as config}]
+  [http {:jenkins/keys [url username password job-path delay] :as config}
+   latest-build-id]
   (p/let [jenkins-get (jenkins-get-fn http [username password] url job-path)]
     (p/->> (jenkins-get runs-suffix)
+           (filter #(or (nil? latest-build-id)
+                        (> (parse-int (:id %)) latest-build-id)))
            (partition-all 10)
            (map (fn [builds-page]
                   (p/do (p/delay delay)
