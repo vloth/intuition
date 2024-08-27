@@ -17,7 +17,7 @@
 
 (defn- get-bb
   ([http {:bitbucket/keys [username password]} url]
-   (request http {:method "GET" :url url :credentials [username password]})))
+   (request http {:method "GET" :url url :as :clj :credentials [username password]})))
 
 (defn- get-activity
   [activity-url http config]

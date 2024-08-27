@@ -8,6 +8,7 @@
   ([http {:jira/keys [url username password jql]} start-at]
    (request http
             {:method      "POST"
+             :as          :clj
              :url         (join url "rest/api/3/search")
              :credentials [username password]
              :body        {:jql          jql
