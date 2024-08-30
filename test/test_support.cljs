@@ -35,3 +35,20 @@
        (p/let [result# (do ~@body)]
          ~@restores
          result#))))
+
+(defn new-id
+  "Generates a random base62 ID string.
+  
+  The ID is composed of characters from the set [0-9a-zA-Z], and is generated
+  by converting a random integer to a base62 representation.
+  
+  Returns:
+  A string representing the base62 ID. If the generated ID is empty, returns \"0\"."
+  []
+  (let [base62-chars
+          "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        base 62
+        random-number (rand-int (Math/pow 62 8))
+        digits (take-while #(> % 0) (iterate #(quot % base) random-number))
+        result (apply str (map #(nth base62-chars (mod % base)) digits))]
+    (if (empty? result) "0" result)))

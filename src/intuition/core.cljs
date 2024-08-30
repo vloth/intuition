@@ -78,8 +78,8 @@
   ;; run task
   (js/await
     (-> @system-atom
-        (update :config assoc 
-                :task/type "jenkins" 
-                :task/source "my-source")
+        #_(update :config assoc 
+                  :task/type "jenkins" 
+                  :task/source "my-source")
        run-task)))
 

@@ -21,7 +21,7 @@
       (format
         "SELECT id 
          FROM jenkins 
-         WHERE source = '%s' 
+         WHERE source = '%s'AND result != 'UNKNOWN'
          ORDER BY id DESC LIMIT 1"
         source))
     (first)

@@ -1,7 +1,10 @@
 (ns intuition.components.http
   (:require ["util" :refer [format]]
+            [clojure.string :as str]
+            [intuition.log :as l :refer [log]]
             [intuition.support :refer [base-64]]
-            [promesa.core :as p]))
+            [promesa.core :as p]
+            [test-support :refer [new-id]]))
 
 (defn- auth-header
   [[username password]]
@@ -17,11 +20,13 @@
 (defn- coerce-clj
   [response]
   (-> (p/-> response .json (js->clj :keywordize-keys true))
+      (p/then (fn [clj] {:body clj :status (.-status response)}))
       (p/catch #(->error :response-not-json % response))))
 
 (defn- coerce-text
   [response]
   (-> (p/-> response .text)
+      (p/then (fn [text] {:body text :status (.-status response)}))
       (p/catch #(->error :response-not-text % response))))
 
 (defn- error-message
@@ -36,6 +41,7 @@
 (defn- fail? [response] (= :request-error (:error-type response)))
 (defn- too-many? [response] (= (.-status response) 429))
 (defn- ok? [response] (.-ok response))
+
 (defn- error? [result] (:error-type result))
 
 (defn- safe-fetch
@@ -68,7 +74,36 @@
           :else
           (->error :response-unknown-coercion nil response))))
 
-(defn new-http [config] #(fetch config %))
+(defn explode-url
+  [url]
+  (let [url-obj  (js/URL. url)
+        base-url (str (.-origin url-obj) (.-pathname url-obj))
+        params   (js/URLSearchParams. (.-search url-obj))]
+    {:base-url     (str base-url)
+     :query-params (when-not (str/blank? params) params)}))
+
+(defn log-result
+  [id {:keys [url method]} {:keys [status]} duration]
+  (let [{:keys [base-url query-params]} (explode-url url)]
+    (log {:msg "%1\t\nmethod=%2\nurl=%3\nparams=%4\nstatus=%5\nduration=%6ms\n"
+          :args [id method base-url (or query-params "none") status duration]
+          :color {id         l/id-color
+                  "method"   l/bold-style
+                  "status"   l/bold-style
+                  "url"      l/bold-style
+                  "params"   l/bold-style
+                  "duration" l/bold-style}})))
+
+(defn new-http
+  [config]
+  (fn [fetch-args]
+    (p/let [id         (format "[%s]" (new-id))
+            start-time (.now js/Date)
+            result     (fetch config fetch-args)
+            end-time   (.now js/Date)
+            duration   (- end-time start-time)]
+      (log-result id fetch-args result duration)
+      (:body result))))
 
 (defn new-mock-http
   [spec]
