@@ -1,9 +1,9 @@
 (ns unit.intuition.support-test
-  (:require [cljs.test :refer [are deftest is]]
+  (:require [aux.test :refer [deftest-async]]
+            [cljs.test :refer [are deftest is]]
             [intuition.support :refer [->json allseq base-64 join parse-date
                                        parse-int]]
-            [promesa.core :as p]
-            [test-support :refer [deftest-async]]))
+            [promesa.core :as p]))
 
 (deftest-async test-allseq-normal
   (-> (allseq [(p/resolved 1) (p/resolved 2) (p/resolved 3)])

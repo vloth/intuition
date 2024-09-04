@@ -2,9 +2,8 @@
   (:require ["util" :refer [format]]
             [clojure.string :as str]
             [intuition.log :as l :refer [log]]
-            [intuition.support :refer [base-64]]
-            [promesa.core :as p]
-            [test-support :refer [new-id]]))
+            [intuition.support :refer [base-64 new-id]]
+            [promesa.core :as p]))
 
 (defn- basic-auth-header
   [[username password]]

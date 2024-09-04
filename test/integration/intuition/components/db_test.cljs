@@ -1,8 +1,8 @@
 (ns integration.intuition.components.db-test
-  (:require [clojure.test :refer [is]]
+  (:require [aux.test :refer [deftest-async]]
+            [clojure.test :refer [is]]
             [intuition.components.db :refer [exec halt-db new-db]]
-            [promesa.core :as p]
-            [test-support :refer [deftest-async]]))
+            [promesa.core :as p]))
 
 (deftest-async component-db
   (p/let [db        (new-db {:db/path ":memory:"})

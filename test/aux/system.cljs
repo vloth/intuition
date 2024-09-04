@@ -1,4 +1,4 @@
-(ns integration.aux.system
+(ns aux.system
   (:require [cljs.test :refer [async]]
             [intuition.components.db :refer [exec halt-db new-db]]
             [intuition.components.http :refer [new-mock-http]]
@@ -10,17 +10,14 @@
 
 (defn start-system
   [config]
-  (fn []
-    (async done
-           (let [http-mocks (atom {})]
-             (p/do
-               (reset! system-atom
-                       {:config     config
-                        :db         (new-db config)
-                        :http       (new-mock-http http-mocks)
-                        :http-mocks http-mocks})
-               (sync-schema (:db @system-atom)))
-             (done)))))
+  #(async done
+          (let [http-mocks (atom {})]
+            (p/do (reset! system-atom {:config     config
+                                       :db         (new-db config)
+                                       :http       (new-mock-http http-mocks)
+                                       :http-mocks http-mocks})
+                  (sync-schema (:db @system-atom)))
+           (done))))
 
 (defn mock-http
   [mocks]
@@ -30,9 +27,6 @@
   [query]
   (p/let [result (exec (:db @system-atom) query)]
     (js->clj result :keywordize-keys true)))
-
-(defn call [f & args]
-  (apply f (conj args @system-atom)))
 
 (defn halt-system []
   (async done
