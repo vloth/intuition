@@ -95,10 +95,10 @@
      :query-params (when-not (str/blank? params) params)}))
 
 (defn- log-result
-  [id {:keys [url method]} {:keys [status]} duration]
+  [id {:keys [url method]} {:keys [status body]} duration]
   (let [{:keys [base-url query-params]} (explode-url url)]
     (log {:msg "%1\t\nmethod=%2\nurl=%3\nparams=%4\nstatus=%5\nbody=%6\nduration=%7ms\n"
-          :args [id method base-url (or query-params "none") status duration]
+          :args [id method status base-url query-params (.-length (str body)) duration]
           :color {id         l/id-color
                   "method"   l/bold-style
                   "status"   l/bold-style
