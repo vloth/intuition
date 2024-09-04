@@ -96,6 +96,20 @@
         hash VARCHAR(250),
         source VARCHAR(250),
         PRIMARY KEY (tag, hash, source)
+      );
+      
+    CREATE TABLE IF NOT EXISTS
+      github(
+        owner VARCHAR(50),
+        repository VARCHAR(50),
+        id INT,
+        title VARCHAR(250),
+        body VARCHAR(1000),
+        state VARCHAR(50),
+        author VARCHAR(50),
+        created TIMESTAMP,
+        updated TIMESTAMP,
+        PRIMARY KEY (owner, repository, id)
       );")
 
 (defn sync-schema [db]

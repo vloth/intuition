@@ -3,10 +3,17 @@
             [intuition.db.query :as query]
             [intuition.ports.bitbucket :as bitbucket]
             [intuition.ports.git :as git]
+            [intuition.ports.github :as github]
             [intuition.ports.jenkins :as jenkins]
             [intuition.ports.jira :as jira]
             [intuition.support :refer [add-time mkdir]]
             [promesa.core :as p]))
+
+(defn upsert-github-issues
+  [{:keys [config db http]}]
+  (p/->> (github/get-issues http config)
+         (map #(adapter/->gh-issue config %))
+         (#(query/upsert-github-issues db %))))
 
 (defn upsert-jenkins-builds
   [{:keys [config db http]}]

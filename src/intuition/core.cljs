@@ -11,6 +11,7 @@
   (adapter/expand-config-keys
    {:db        [:path]
     :task      [:type :source]
+    :github    [:token :owner :repository]
     :http      [:delay-429]
     :jenkins   [:job-path :url :username :password :delay :step-delay]
     :git       [:repository :branch :remote :pull]
@@ -55,6 +56,7 @@
     "jenkins"   (controller/upsert-jenkins-builds system)
     "bitbucket" (controller/upsert-bitbucket-pullrequests system)
     "jira"      (controller/upsert-jira-issues system)
+    "github"    (controller/upsert-github-issues system)
     "git"       (p/do (controller/upsert-git-commits system)
                       (controller/upsert-git-tags system))
     nil))

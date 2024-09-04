@@ -15,7 +15,7 @@
 (use-fixtures :once {:before (s/start-system config) :after s/halt-system})
 (use-fixtures :each {:after s/reset-system})
 
-(deftest-async test-upsert-empty-list-2
+(deftest-async test-upsert-empty-list
  (s/mock-http {#"http://jenkins.com/job/example/runs\?" []})
  (controller/upsert-jenkins-builds @s/system-atom)
  (aux.db/assert= "select * from jenkins" []))

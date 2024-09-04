@@ -13,6 +13,16 @@
                      {:on-conflict :ignore}
                      builds))))
 
+(defn upsert-github-issues
+  [db issues]
+  (when (seq issues)
+    (p/do (db/insert db
+                     "github"
+                     [:owner :repository :id :title :body :state :author
+                      :created :updated]
+                     {:on-conflict :replace}
+                     issues))))
+
 (defn get-latest-build
   [db source]
   (p/->

@@ -21,6 +21,18 @@
     {}
     expanded-config-keys))
 
+(defn ->gh-issue
+  [{:github/keys [owner repository]} issue]
+  {:owner      owner
+   :repository repository
+   :id         (:number issue)
+   :title      (:title issue)
+   :body       (:body issue)
+   :state      (:state issue)
+   :author     (get-in issue [:user :login])
+   :created    (js/Date. (:created_at issue))
+   :updated    (some-> (:updated_at issue) (js/Date.))})
+
 (defn ->config
   [raw-config expanded-config-keys]
   (-> (convert-keys raw-config expanded-config-keys)
