@@ -1,5 +1,5 @@
 (ns intuition.ports.jira
-  (:require [intuition.components.http :refer [request]]
+  (:require [intuition.components.http :refer [basic-auth request]]
             [intuition.support :refer [allseq join]]
             [promesa.core :as p]))
 
@@ -7,21 +7,20 @@
   ([http config] (search-page http config 0))
   ([http {:jira/keys [url username password jql]} start-at]
    (request http
-            {:method      "POST"
-             :as          :clj
-             :url         (join url "rest/api/3/search")
-             :credentials [username password]
-             :body        {:jql          jql
-                           :expand       ["changelog"]
-                           :fields       ["summary" "status" "assignee" "labels"
-                                          "reporter" "project" "resolution"
-                                          "resolutiondate" "updated" "created"
-                                          "key" "statuscategorychangedate"
-                                          "priority" "duedate" "issuetype"
-                                          "*all"]
-                           :fieldsByKeys true
-                           :maxResults   100
-                           :startAt      start-at}})))
+            {:method "POST"
+             :as     :clj
+             :url    (join url "rest/api/3/search")
+             :auth   (basic-auth [username password])
+             :body   {:jql          jql
+                      :expand       ["changelog"]
+                      :fields       ["summary" "status" "assignee" "labels"
+                                     "reporter" "project" "resolution"
+                                     "resolutiondate" "updated" "created" "key"
+                                     "statuscategorychangedate" "priority"
+                                     "duedate" "issuetype" "*all"]
+                      :fieldsByKeys true
+                      :maxResults   100
+                      :startAt      start-at}})))
 
 (defn search
   "Performs a paginated search for Jira issues based on the provided configuration.

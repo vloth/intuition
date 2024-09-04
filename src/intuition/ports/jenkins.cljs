@@ -1,6 +1,6 @@
 (ns intuition.ports.jenkins
   (:require ["util" :refer [format]]
-            [intuition.components.http :refer [request]]
+            [intuition.components.http :refer [basic-auth request]]
             [intuition.support :refer [allseq join parse-int]]
             [promesa.core :as p]))
 
@@ -12,7 +12,7 @@
   (-> "/runs/%s/steps?tree=displayDescription,displayName,durationInMillis,result,startTime,state,id,type"
       (format id)))
 
-(defn log-api
+(defn- log-api
   [run-id step-id]
   (-> "/runs/%s/steps/%s/log"
       (format run-id step-id)))
@@ -23,14 +23,13 @@
   [http credentials url job-path]
   (fn [url-pargs & {:keys [as] :or {as :clj}}]
     (request http
-             {:method      :GET
-              :as          as
-              :url         (->api url job-path url-pargs)
-              :credentials credentials})))
+             {:method :GET
+              :as     as
+              :url    (->api url job-path url-pargs)
+              :auth   (basic-auth credentials)})))
 
 (defn- agument-step-details
   [jenkins-get build step]
-  (do (def jenkins-get jenkins-get) (def build build) (def step step))
   (p/->> (jenkins-get (log-api (:id build) (:id step)) :as :text)
          (assoc step :output)))
 

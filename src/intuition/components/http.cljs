@@ -6,12 +6,23 @@
             [promesa.core :as p]
             [test-support :refer [new-id]]))
 
-(defn- auth-header
+(defn- basic-auth-header
   [[username password]]
   (->> (format "%s:%s" username password)
        (.from js/Buffer)
        base-64
        (format "Basic %s")))
+
+(defn- bearer-auth-header
+  [token]
+  (format "Bearer %s" token))
+
+(defn auth-header
+  [{:auth/keys [type params]}]
+  (case type
+    :auth/basic  (basic-auth-header params)
+    :auth/bearer (bearer-auth-header params)
+    nil))
 
 (defn- ->error
   [type error response]
@@ -20,7 +31,7 @@
 (defn- coerce-clj
   [response]
   (-> (p/-> response .json (js->clj :keywordize-keys true))
-      (p/then (fn [clj] {:body clj :status (.-status response)}))
+      (p/then (fn [clj] {:body clj :status (.-status response)})) 
       (p/catch #(->error :response-not-json % response))))
 
 (defn- coerce-text
@@ -54,13 +65,14 @@
   (p/do (p/delay (:http/delay-420 config) (fetch-fn config arguments))))
 
 (defn- ->fetch-args
-  [{:keys [url method body credentials]}]
+  [{:keys [url method body auth headers]}]
   [url
    (clj->js {:method  method
              :body    (some->> body clj->js (.stringify js/JSON))
-             :headers {:Authorization (auth-header credentials)
-                       :Accept        "application/json"
-                       :Content-Type  "application/json"}})])
+             :headers (merge {:Authorization (auth-header auth)
+                              :Accept        "application/json"
+                              :Content-Type  "application/json"}
+                             headers)})])
 
 (defn- fetch
   [config arguments]
@@ -74,7 +86,7 @@
           :else
           (->error :response-unknown-coercion nil response))))
 
-(defn explode-url
+(defn- explode-url
   [url]
   (let [url-obj  (js/URL. url)
         base-url (str (.-origin url-obj) (.-pathname url-obj))
@@ -82,17 +94,26 @@
     {:base-url     (str base-url)
      :query-params (when-not (str/blank? params) params)}))
 
-(defn log-result
+(defn- log-result
   [id {:keys [url method]} {:keys [status]} duration]
   (let [{:keys [base-url query-params]} (explode-url url)]
-    (log {:msg "%1\t\nmethod=%2\nurl=%3\nparams=%4\nstatus=%5\nduration=%6ms\n"
+    (log {:msg "%1\t\nmethod=%2\nurl=%3\nparams=%4\nstatus=%5\nbody=%6\nduration=%7ms\n"
           :args [id method base-url (or query-params "none") status duration]
           :color {id         l/id-color
                   "method"   l/bold-style
                   "status"   l/bold-style
                   "url"      l/bold-style
                   "params"   l/bold-style
+                  "body"     l/bold-style
                   "duration" l/bold-style}})))
+
+(defn basic-auth
+  [credentials]
+  {:auth/type :auth/basic :auth/params credentials})
+
+(defn bearer-auth
+  [token]
+  {:auth/type :auth/bearer :auth/params token})
 
 (defn new-http
   [config]
@@ -103,14 +124,18 @@
             end-time   (.now js/Date)
             duration   (- end-time start-time)]
       (log-result id fetch-args result duration)
-      (:body result))))
+      result)))
 
 (defn new-mock-http
   [spec]
   (fn [args]
     (let [url (:url args)]
-      (if-let [response (get @spec url)]
-        response
+      (if-let [result 
+               (some (fn [element]
+                       (when (re-find (re-pattern element) url)
+                         (get @spec element)))
+                     (keys @spec))]
+        {:body result}
         (->error :response-not-found nil args)))))
 
 (defn request
@@ -119,4 +144,4 @@
     (if (error? result)
       (throw (ex-info (error-message result http-args)
                       (assoc result :args http-args)))
-      result)))
+      (:body result))))

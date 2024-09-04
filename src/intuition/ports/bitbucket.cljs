@@ -1,5 +1,5 @@
 (ns intuition.ports.bitbucket
-  (:require [intuition.components.http :refer [request]]
+  (:require [intuition.components.http :refer [basic-auth request]]
             [intuition.support :refer [allseq join]]
             [promesa.core :as p]))
 
@@ -17,7 +17,11 @@
 
 (defn- get-bb
   ([http {:bitbucket/keys [username password]} url]
-   (request http {:method "GET" :url url :as :clj :credentials [username password]})))
+   (request http
+            {:method "GET"
+             :url url 
+             :as :clj 
+             :auth (basic-auth [username password])})))
 
 (defn- get-activity
   [activity-url http config]

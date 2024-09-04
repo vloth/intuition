@@ -42,7 +42,8 @@
 
 (defn reset-system []
   (async done
-         (p/do (p/->> ["bitbucket" "jenkins" "jira" "git.commit" "git.tag"]
+         (p/do (reset! (:http-mocks @system-atom) {})
+               (p/->> ["bitbucket" "jenkins" "jira" "git.commit" "git.tag"]
                       (map #(str "TRUNCATE " %))
                       (map query-db)
                       allseq)
