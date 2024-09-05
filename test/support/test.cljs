@@ -1,4 +1,4 @@
-(ns aux.test
+(ns support.test
   (:require [cljs.test :refer-macros [async is]]
             [promesa.core :as p]))
 

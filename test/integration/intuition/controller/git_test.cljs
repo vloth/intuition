@@ -1,12 +1,12 @@
 (ns integration.intuition.controller.git-test
-  (:require [aux.db :as aux.db]
-            [aux.system :as s]
-            [aux.test :refer [deftest-async with-redef-async]]
-            [cljs.test :refer [use-fixtures]]
+  (:require [cljs.test :refer [use-fixtures]]
             [intuition.controller :as controller]
             [intuition.ports.git :as git]
             [intuition.support :refer [mkdir]]
-            [promesa.core :as p]))
+            [promesa.core :as p]
+            [support.db :as aux.db]
+            [support.system :as s]
+            [support.test :refer [deftest-async with-redef-async]]))
 
 (defn generate-git-tags
   [& versions]

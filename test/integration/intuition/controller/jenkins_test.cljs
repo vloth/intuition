@@ -1,9 +1,9 @@
 (ns integration.intuition.controller.jenkins-test
-  (:require [aux.db :as aux.db]
-            [aux.system :as s]
-            [aux.test :refer [deftest-async]]
-            [cljs.test :refer [use-fixtures]]
-            [intuition.controller :as controller]))
+  (:require [cljs.test :refer [use-fixtures]]
+            [intuition.controller :as controller]
+            [support.db :as aux.db]
+            [support.system :as s]
+            [support.test :refer [deftest-async]]))
 
 (def config
   {:db/path          ":memory:"

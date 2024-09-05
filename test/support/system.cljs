@@ -1,4 +1,4 @@
-(ns aux.system
+(ns support.system
   (:require [cljs.test :refer [async]]
             [intuition.components.db :refer [exec halt-db new-db]]
             [intuition.components.http :refer [new-mock-http]]
