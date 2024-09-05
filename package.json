@@ -11,7 +11,6 @@
     "test": "node --no-deprecation dev/test.mjs"
   },
   "dependencies": {
-    "cli-progress": "^3.12.0",
     "duckdb": "^1.0.0",
     "nbb": "^1.2.187",
     "simple-git": "^3.25.0"
